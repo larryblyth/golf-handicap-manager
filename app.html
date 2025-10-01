@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Golf Handicap Manager - Dashboard</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="app-styles.css">
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
+</head>
+<body class="app-body">
+    <nav class="navbar app-navbar">
+        <div class="nav-container">
+            <div class="logo">
+                <a href="/" class="logo-link">
+                    <h2>⛳ Golf Handicap Manager</h2>
+                </a>
+            </div>
+            <div class="nav-links">
+                <button id="sync-golf-rounds-nav-btn" class="sync-nav-btn" style="display: none;" title="Sync Golf Rounds from Gmail">
+                    <span class="btn-icon">🔄</span>
+                    <span class="btn-text">Sync Rounds</span>
+                </button>
+                <div id="userProfile" class="user-profile" style="display: none;">
+                    <img id="userAvatar" src="" alt="User Avatar" class="user-avatar">
+                    <span id="userName" class="user-name"></span>
+                    <button id="signOutBtn" class="btn-outline-nav">Sign Out</button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="app-layout">
+        <aside class="sidebar">
+            <nav class="sidebar-nav">
+                <ul class="nav-menu">
+                    <li class="nav-item">
+                        <a href="/app" class="nav-link active">
+                            <span class="nav-icon">📊</span>
+                            <span class="nav-text">Dashboard</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="/app/rounds" class="nav-link">
+                            <span class="nav-icon">🏌️</span>
+                            <span class="nav-text">My Rounds</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="/app/settings" class="nav-link">
+                            <span class="nav-icon">⚙️</span>
+                            <span class="nav-text">Settings</span>
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+        </aside>
+
+        <main class="app-main">
+            <div class="app-content">
+                <!-- Dashboard Content -->
+                <div id="dashboard-content" class="page-content">
+                    <div class="page-header">
+                        <h1>Dashboard</h1>
+                        <p>Welcome back! Here's your golf handicap overview.</p>
+                    </div>
+
+                    <div class="dashboard-grid">
+                    <div class="dashboard-card">
+                        <div class="card-header">
+                            <h3>Current Handicap</h3>
+                            <span class="card-icon">📊</span>
+                        </div>
+                        <div class="card-content">
+                            <div class="handicap-display">
+                                <span class="handicap-number">12.4</span>
+                                <span class="handicap-label">Handicap Index</span>
+                            </div>
+                            <div class="handicap-trend">
+                                <span class="trend-indicator positive">↗</span>
+                                <span class="trend-text">+0.2 from last month</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="dashboard-card">
+                        <div class="card-header">
+                            <h3>Recent Rounds</h3>
+                            <span class="card-icon">🏌️</span>
+                        </div>
+                        <div class="card-content">
+                            <div class="rounds-list">
+                                <div class="round-item">
+                                    <div class="round-course">Pebble Beach Golf Links</div>
+                                    <div class="round-score">85 (+13)</div>
+                                    <div class="round-date">2 days ago</div>
+                                </div>
+                                <div class="round-item">
+                                    <div class="round-course">Augusta National</div>
+                                    <div class="round-score">92 (+20)</div>
+                                    <div class="round-date">1 week ago</div>
+                                </div>
+                                <div class="round-item">
+                                    <div class="round-course">St. Andrews Old Course</div>
+                                    <div class="round-score">88 (+16)</div>
+                                    <div class="round-date">2 weeks ago</div>
+                                </div>
+                            </div>
+                            <div class="rounds-cta">
+                                <button class="view-all-rounds-btn" onclick="showPage('rounds')">
+                                    <span class="btn-icon">🏌️</span>
+                                    <span class="btn-text">View All Rounds</span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+
+                    <div class="dashboard-card">
+                        <div class="card-header">
+                            <h3>Progress This Month</h3>
+                            <span class="card-icon">📈</span>
+                        </div>
+                        <div class="card-content">
+                            <div class="progress-stats">
+                                <div class="stat-item">
+                                    <div class="stat-value">8</div>
+                                    <div class="stat-label">Rounds Played</div>
+                                </div>
+                                <div class="stat-item">
+                                    <div class="stat-value">87.2</div>
+                                    <div class="stat-label">Average Score</div>
+                                </div>
+                                <div class="stat-item">
+                                    <div class="stat-value">-1.2</div>
+                                    <div class="stat-label">Handicap Change</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+                </div>
+
+                <!-- My Rounds Content -->
+                <div id="rounds-content" class="page-content" style="display: none;">
+                    <div class="page-header">
+                        <h1>My Rounds</h1>
+                        <p>Track and review all your golf rounds</p>
+                    </div>
+
+                    <div class="rounds-container">
+                        <div class="round-card">
+                            <div class="round-image">
+                                <img src="https://images.unsplash.com/photo-1535131749006-b7f58c99034b?w=400&h=250&fit=crop" alt="Pebble Beach Golf Links">
+                            </div>
+                            <div class="round-details">
+                                <div class="round-header">
+                                    <h3>Pebble Beach Golf Links</h3>
+                                    <div class="round-score">
+                                        <span class="score-number">85</span>
+                                        <span class="score-par">+13</span>
+                                    </div>
+                                </div>
+                                <div class="round-info">
+                                    <div class="course-stats">
+                                        <div class="stat">
+                                            <span class="stat-label">Rating:</span>
+                                            <span class="stat-value">75.1</span>
+                                        </div>
+                                        <div class="stat">
+                                            <span class="stat-label">Slope:</span>
+                                            <span class="stat-value">142</span>
+                                        </div>
+                                    </div>
+                                    <div class="round-meta">
+                                        <span class="round-date">March 15, 2024</span>
+                                        <a href="https://www.pebblebeach.com/golf/pebble-beach-golf-links" target="_blank" class="course-link">Visit Course Website</a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="round-card">
+                            <div class="round-image">
+                                <img src="https://images.unsplash.com/photo-1593111774240-d529f12cf4b1?w=400&h=250&fit=crop" alt="Augusta National Golf Club">
+                            </div>
+                            <div class="round-details">
+                                <div class="round-header">
+                                    <h3>Augusta National Golf Club</h3>
+                                    <div class="round-score">
+                                        <span class="score-number">92</span>
+                                        <span class="score-par">+20</span>
+                                    </div>
+                                </div>
+                                <div class="round-info">
+                                    <div class="course-stats">
+                                        <div class="stat">
+                                            <span class="stat-label">Rating:</span>
+                                            <span class="stat-value">76.2</span>
+                                        </div>
+                                        <div class="stat">
+                                            <span class="stat-label">Slope:</span>
+                                            <span class="stat-value">148</span>
+                                        </div>
+                                    </div>
+                                    <div class="round-meta">
+                                        <span class="round-date">March 8, 2024</span>
+                                        <a href="https://www.masters.com" target="_blank" class="course-link">Visit Course Website</a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="round-card">
+                            <div class="round-image">
+                                <img src="https://images.unsplash.com/photo-1587174486073-ae5e5cef6435?w=400&h=250&fit=crop" alt="St. Andrews Old Course">
+                            </div>
+                            <div class="round-details">
+                                <div class="round-header">
+                                    <h3>St. Andrews Old Course</h3>
+                                    <div class="round-score">
+                                        <span class="score-number">88</span>
+                                        <span class="score-par">+16</span>
+                                    </div>
+                                </div>
+                                <div class="round-info">
+                                    <div class="course-stats">
+                                        <div class="stat">
+                                            <span class="stat-label">Rating:</span>
+                                            <span class="stat-value">72.0</span>
+                                        </div>
+                                        <div class="stat">
+                                            <span class="stat-label">Slope:</span>
+                                            <span class="stat-value">131</span>
+                                        </div>
+                                    </div>
+                                    <div class="round-meta">
+                                        <span class="round-date">March 1, 2024</span>
+                                        <a href="https://www.standrews.com" target="_blank" class="course-link">Visit Course Website</a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="round-card">
+                            <div class="round-image">
+                                <img src="https://images.unsplash.com/photo-1593111774240-d529f12cf4b1?w=400&h=250&fit=crop" alt="TPC Sawgrass">
+                            </div>
+                            <div class="round-details">
+                                <div class="round-header">
+                                    <h3>TPC Sawgrass - Stadium Course</h3>
+                                    <div class="round-score">
+                                        <span class="score-number">91</span>
+                                        <span class="score-par">+19</span>
+                                    </div>
+                                </div>
+                                <div class="round-info">
+                                    <div class="course-stats">
+                                        <div class="stat">
+                                            <span class="stat-label">Rating:</span>
+                                            <span class="stat-value">76.4</span>
+                                        </div>
+                                        <div class="stat">
+                                            <span class="stat-label">Slope:</span>
+                                            <span class="stat-value">155</span>
+                                        </div>
+                                    </div>
+                                    <div class="round-meta">
+                                        <span class="round-date">February 22, 2024</span>
+                                        <a href="https://www.tpc.com/sawgrass" target="_blank" class="course-link">Visit Course Website</a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="round-card">
+                            <div class="round-image">
+                                <img src="https://images.unsplash.com/photo-1535131749006-b7f58c99034b?w=400&h=250&fit=crop" alt="Whistling Straits">
+                            </div>
+                            <div class="round-details">
+                                <div class="round-header">
+                                    <h3>Whistling Straits - Straits Course</h3>
+                                    <div class="round-score">
+                                        <span class="score-number">89</span>
+                                        <span class="score-par">+17</span>
+                                    </div>
+                                </div>
+                                <div class="round-info">
+                                    <div class="course-stats">
+                                        <div class="stat">
+                                            <span class="stat-label">Rating:</span>
+                                            <span class="stat-value">77.2</span>
+                                        </div>
+                                        <div class="stat">
+                                            <span class="stat-label">Slope:</span>
+                                            <span class="stat-value">152</span>
+                                        </div>
+                                    </div>
+                                    <div class="round-meta">
+                                        <span class="round-date">February 15, 2024</span>
+                                        <a href="https://www.destinationkohler.com/golf/whistling-straits" target="_blank" class="course-link">Visit Course Website</a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Settings Content -->
+                <div id="settings-content" class="page-content" style="display: none;">
+                    <div class="page-header">
+                        <h1>Settings</h1>
+                        <p>Manage your account settings and integrations.</p>
+                    </div>
+
+                    <div class="settings-grid">
+                        <div class="settings-card">
+                            <div class="card-header">
+                                <h3>Gmail Integration</h3>
+                                <span class="card-icon">📧</span>
+                            </div>
+                            <div class="card-content">
+                                <div id="gmail-access-granted" class="gmail-status" style="display: none;">
+                                    <div class="gmail-status-message">
+                                        <span class="status-icon">✅</span>
+                                        <span>Gmail access granted</span>
+                                    </div>
+                                    <p class="integration-description">
+                                        Your Gmail account is connected. Golf rounds from emails will be automatically detected and can be synced using the sync button in the navigation bar.
+                                    </p>
+                                    <button id="revoke-gmail-access-btn" class="btn-secondary">
+                                        <span class="btn-icon">🔒</span>
+                                        <span class="btn-text">Revoke Access</span>
+                                    </button>
+                                </div>
+                                <div id="gmail-access-needed" class="gmail-status" style="display: none;">
+                                    <div class="gmail-status-message">
+                                        <span class="status-icon">📧</span>
+                                        <span>Connect Gmail to auto-sync rounds</span>
+                                    </div>
+                                    <p class="integration-description">
+                                        Connect your Gmail account to automatically find golf round emails from services like Golfshot and sync them to your handicap tracker.
+                                    </p>
+                                    <button id="grant-gmail-access-btn" class="grant-access-btn">
+                                        <span class="btn-icon">🔓</span>
+                                        <span class="btn-text">Allow Gmail Access</span>
+                                    </button>
+                                </div>
+                                <div id="sync-status" class="sync-status"></div>
+                            </div>
+                        </div>
+
+                        <div class="settings-card">
+                            <div class="card-header">
+                                <h3>Account Information</h3>
+                                <span class="card-icon">👤</span>
+                            </div>
+                            <div class="card-content">
+                                <div class="account-info">
+                                    <div class="info-item">
+                                        <label>Name:</label>
+                                        <span id="account-name">Loading...</span>
+                                    </div>
+                                    <div class="info-item">
+                                        <label>Email:</label>
+                                        <span id="account-email">Loading...</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="auth.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>

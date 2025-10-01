@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Golf Handicap Manager - Track Your Game</title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="logo">
+                <a href="#" class="logo-link">
+                    <h2>⛳ Golf Handicap Manager</h2>
+                </a>
+            </div>
+            <div class="nav-links">
+                <a href="#features">Features</a>
+                <a href="#pricing">Pricing</a>
+                <div id="authButtons" class="auth-buttons">
+                    <button id="signInBtn" class="btn-outline-nav">Sign In</button>
+                    <button id="signUpBtn" class="cta-nav">Get Started</button>
+                </div>
+                <div id="userProfile" class="user-profile" style="display: none;">
+                    <a href="/app" class="dashboard-link">Dashboard</a>
+                    <img id="userAvatar" src="" alt="User Avatar" class="user-avatar">
+                    <span id="userName" class="user-name"></span>
+                    <button id="signOutBtn" class="btn-outline-nav">Sign Out</button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <section class="hero">
+        <div class="hero-content">
+            <h1>Track Your Golf Game Like a Pro</h1>
+            <p class="hero-subtitle">The simplest way to calculate and track your golf handicap. Monitor your progress, analyze your rounds, and improve your game.</p>
+            <div class="hero-buttons">
+                <button class="btn-primary">Start Free Trial</button>
+                <button class="btn-secondary">Watch Demo</button>
+            </div>
+        </div>
+        <div class="hero-image">
+            <div class="golf-graphic">🏌️‍♂️</div>
+        </div>
+    </section>
+
+    <section id="features" class="features">
+        <div class="container">
+            <h2>Everything You Need to Manage Your Handicap</h2>
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="feature-icon">📊</div>
+                    <h3>Automatic Calculations</h3>
+                    <p>USGA-compliant handicap calculations updated automatically after each round.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">📱</div>
+                    <h3>Mobile Friendly</h3>
+                    <p>Log rounds on the course with our mobile-optimized interface.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">📈</div>
+                    <h3>Progress Tracking</h3>
+                    <p>Visualize your improvement over time with detailed charts and statistics.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">🏆</div>
+                    <h3>Course Database</h3>
+                    <p>Access thousands of golf courses with accurate ratings and slope data.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">👥</div>
+                    <h3>Share with Friends</h3>
+                    <p>Compare handicaps and challenge your golf buddies to improve together.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">☁️</div>
+                    <h3>Cloud Sync</h3>
+                    <p>Your data is always backed up and accessible from any device.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="pricing" class="pricing">
+        <div class="container">
+            <h2>Simple, Transparent Pricing</h2>
+            <div class="pricing-cards">
+                <div class="pricing-card">
+                    <h3>Free</h3>
+                    <div class="price">$0<span>/month</span></div>
+                    <ul>
+                        <li>Basic handicap calculation</li>
+                        <li>Up to 20 rounds</li>
+                        <li>Mobile access</li>
+                    </ul>
+                    <button class="btn-outline">Get Started</button>
+                </div>
+                <div class="pricing-card featured">
+                    <h3>Pro</h3>
+                    <div class="price">$9<span>/month</span></div>
+                    <ul>
+                        <li>Unlimited rounds</li>
+                        <li>Advanced analytics</li>
+                        <li>Course database access</li>
+                        <li>Export data</li>
+                    </ul>
+                    <button class="btn-primary">Start Free Trial</button>
+                </div>
+                <div class="pricing-card">
+                    <h3>Club</h3>
+                    <div class="price">$29<span>/month</span></div>
+                    <ul>
+                        <li>Everything in Pro</li>
+                        <li>Up to 50 members</li>
+                        <li>Club tournaments</li>
+                        <li>Priority support</li>
+                    </ul>
+                    <button class="btn-outline">Contact Sales</button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="contact" class="cta">
+        <div class="container">
+            <h2>Ready to Improve Your Game?</h2>
+            <p>Join thousands of golfers who are already tracking their handicap with us.</p>
+            <button class="btn-primary btn-large">Start Your Free Trial Today</button>
+            <p class="cta-note">No credit card required • 14-day free trial</p>
+        </div>
+    </section>
+
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h4>⛳ Golf Handicap Manager</h4>
+                    <p>The easiest way to track your golf handicap and improve your game.</p>
+                </div>
+                <div class="footer-section">
+                    <h4>Product</h4>
+                    <a href="#features">Features</a>
+                    <a href="#pricing">Pricing</a>
+                    <a href="#">Mobile App</a>
+                </div>
+                <div class="footer-section">
+                    <h4>Support</h4>
+                    <a href="#">Help Center</a>
+                    <a href="#">Contact Us</a>
+                    <a href="#">Privacy Policy</a>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2024 Golf Handicap Manager. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Authentication Modal -->
+    <div id="authModal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h2>Sign in with Google</h2>
+            <p>Access your golf handicap data securely with your Google account</p>
+            <div class="auth-options">
+                <div id="g_id_onload"
+                     data-client_id="355506902779-5hqnetcls7l1nkku5kalhvcgl2bhcb11.apps.googleusercontent.com"
+                     data-context="signin"
+                     data-ux_mode="popup"
+                     data-callback="handleCredentialResponse"
+                     data-auto_prompt="false"
+                     data-scope="https://www.googleapis.com/auth/gmail.readonly https://www.googleapis.com/auth/userinfo.email https://www.googleapis.com/auth/userinfo.profile">
+                </div>
+                <div class="g_id_signin"
+                     data-type="standard"
+                     data-shape="rectangular"
+                     data-theme="outline"
+                     data-text="signin_with"
+                     data-size="large"
+                     data-logo_alignment="left">
+                </div>
+            </div>
+            <p class="auth-note">
+                Sign in with your Google account to access your golf handicap data
+            </p>
+        </div>
+    </div>
+
+    <script src="auth.js"></script>
+</body>
+</html>
