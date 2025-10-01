@@ -112,6 +112,25 @@ def init_database():
 
 def save_user(user_data):
     """Save or update user data"""
+    existing_user = get_user(user_data['id']) if user_data.get('id') else None
+
+    # Preserve existing Gmail integration fields unless explicitly provided
+    gmail_access_granted = user_data.get('gmail_access_granted')
+    gmail_access_token = user_data.get('gmail_access_token')
+    gmail_refresh_token = user_data.get('gmail_refresh_token')
+
+    if existing_user:
+        if gmail_access_granted is None:
+            gmail_access_granted = existing_user.get('gmail_access_granted', False)
+        if gmail_access_token is None:
+            gmail_access_token = existing_user.get('gmail_access_token')
+        if gmail_refresh_token is None:
+            gmail_refresh_token = existing_user.get('gmail_refresh_token')
+    else:
+        # Default values when creating a brand new user
+        if gmail_access_granted is None:
+            gmail_access_granted = False
+
     conn = sqlite3.connect(DB_FILE)
     cursor = conn.cursor()
 
@@ -124,9 +143,9 @@ def save_user(user_data):
         user_data['email'],
         user_data.get('picture', ''),
         user_data.get('provider', 'google'),
-        user_data.get('gmail_access_granted', False),
-        user_data.get('gmail_access_token'),
-        user_data.get('gmail_refresh_token')
+        gmail_access_granted,
+        gmail_access_token,
+        gmail_refresh_token
     ))
 
     conn.commit()
