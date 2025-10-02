@@ -53,7 +53,7 @@ def init_database():
     """Initialize the database with required tables"""
     conn = sqlite3.connect(DB_FILE)
     cursor = conn.cursor()
-    
+
     # Create users table
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS users (
@@ -65,6 +65,7 @@ def init_database():
             gmail_access_granted BOOLEAN DEFAULT FALSE,
             gmail_access_token TEXT,
             gmail_refresh_token TEXT,
+            first_login BOOLEAN DEFAULT TRUE,
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         )
     ''')
@@ -107,17 +108,24 @@ def init_database():
     except sqlite3.OperationalError:
         pass
 
+    try:
+        cursor.execute('ALTER TABLE users ADD COLUMN first_login BOOLEAN DEFAULT TRUE')
+    except sqlite3.OperationalError:
+        pass
+
     conn.commit()
     conn.close()
 
 def save_user(user_data):
-    """Save or update user data"""
+    """Save or update user data and return whether this is a new user"""
     existing_user = get_user(user_data['id']) if user_data.get('id') else None
+    is_new_user = existing_user is None
 
     # Preserve existing Gmail integration fields unless explicitly provided
     gmail_access_granted = user_data.get('gmail_access_granted')
     gmail_access_token = user_data.get('gmail_access_token')
     gmail_refresh_token = user_data.get('gmail_refresh_token')
+    first_login = user_data.get('first_login')
 
     if existing_user:
         if gmail_access_granted is None:
@@ -126,17 +134,21 @@ def save_user(user_data):
             gmail_access_token = existing_user.get('gmail_access_token')
         if gmail_refresh_token is None:
             gmail_refresh_token = existing_user.get('gmail_refresh_token')
+        if first_login is None:
+            first_login = existing_user.get('first_login', False)
     else:
         # Default values when creating a brand new user
         if gmail_access_granted is None:
             gmail_access_granted = False
+        if first_login is None:
+            first_login = True
 
     conn = sqlite3.connect(DB_FILE)
     cursor = conn.cursor()
 
     cursor.execute('''
-        INSERT OR REPLACE INTO users (id, name, email, picture, provider, gmail_access_granted, gmail_access_token, gmail_refresh_token)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+        INSERT OR REPLACE INTO users (id, name, email, picture, provider, gmail_access_granted, gmail_access_token, gmail_refresh_token, first_login)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
     ''', (
         user_data['id'],
         user_data['name'],
@@ -145,11 +157,14 @@ def save_user(user_data):
         user_data.get('provider', 'google'),
         gmail_access_granted,
         gmail_access_token,
-        gmail_refresh_token
+        gmail_refresh_token,
+        first_login
     ))
 
     conn.commit()
     conn.close()
+
+    return is_new_user
 
 def get_user(user_id):
     """Get user data including Gmail access status"""
@@ -157,7 +172,7 @@ def get_user(user_id):
     cursor = conn.cursor()
 
     cursor.execute('''
-        SELECT id, name, email, picture, provider, gmail_access_granted, gmail_access_token, gmail_refresh_token
+        SELECT id, name, email, picture, provider, gmail_access_granted, gmail_access_token, gmail_refresh_token, first_login
         FROM users WHERE id = ?
     ''', (user_id,))
 
@@ -173,7 +188,8 @@ def get_user(user_id):
             'provider': row[4],
             'gmail_access_granted': bool(row[5]),
             'gmail_access_token': row[6],
-            'gmail_refresh_token': row[7]
+            'gmail_refresh_token': row[7],
+            'first_login': bool(row[8]) if row[8] is not None else False
         }
     return None
 
@@ -569,6 +585,8 @@ class GolfHandicapHandler(http.server.SimpleHTTPRequestHandler):
             self.handle_oauth_callback()
         elif path == '/api/revoke-gmail-access':
             self.handle_revoke_gmail_access()
+        elif path == '/api/mark-onboarding-complete':
+            self.handle_mark_onboarding_complete()
         else:
             self.send_error(404, "Endpoint not found")
     
@@ -667,35 +685,36 @@ class GolfHandicapHandler(http.server.SimpleHTTPRequestHandler):
             content_length = int(self.headers['Content-Length'])
             post_data = self.rfile.read(content_length)
             request_data = json.loads(post_data.decode('utf-8'))
-            
-            # Save user to database
-            save_user(request_data)
-            
+
+            # Save user to database and get whether this is a new user
+            is_new_user = save_user(request_data)
+
             # Send response
             response_data = {
                 'success': True,
-                'message': 'User data saved successfully'
+                'message': 'User data saved successfully',
+                'is_new_user': is_new_user
             }
-            
+
             self.send_response(200)
             self.send_header('Content-type', 'application/json')
             self.send_header('Access-Control-Allow-Origin', '*')
             self.end_headers()
-            
+
             response_json = json.dumps(response_data)
             self.wfile.write(response_json.encode('utf-8'))
-            
+
         except Exception as e:
             error_response = {
                 'success': False,
                 'error': str(e)
             }
-            
+
             self.send_response(500)
             self.send_header('Content-type', 'application/json')
             self.send_header('Access-Control-Allow-Origin', '*')
             self.end_headers()
-            
+
             response_json = json.dumps(error_response)
             self.wfile.write(response_json.encode('utf-8'))
 
@@ -829,6 +848,64 @@ class GolfHandicapHandler(http.server.SimpleHTTPRequestHandler):
 
         except Exception as e:
             print(f"Error revoking Gmail access: {e}")
+
+            # Send error response
+            error_response = {
+                'success': False,
+                'error': str(e)
+            }
+
+            self.send_response(500)
+            self.send_header('Content-type', 'application/json')
+            self.send_header('Access-Control-Allow-Origin', '*')
+            self.end_headers()
+            response_json = json.dumps(error_response)
+            self.wfile.write(response_json.encode('utf-8'))
+
+    def handle_mark_onboarding_complete(self):
+        """Mark user's first login as complete"""
+        try:
+            # Read request body
+            content_length = int(self.headers['Content-Length'])
+            post_data = self.rfile.read(content_length)
+            request_data = json.loads(post_data.decode('utf-8'))
+
+            user_id = request_data.get('user_id')
+            if not user_id:
+                raise ValueError("Missing user_id")
+
+            # Update user's first_login status
+            conn = sqlite3.connect(DB_FILE)
+            cursor = conn.cursor()
+
+            cursor.execute('''
+                UPDATE users
+                SET first_login = 0
+                WHERE id = ?
+            ''', (user_id,))
+
+            if cursor.rowcount == 0:
+                raise ValueError("User not found")
+
+            conn.commit()
+            conn.close()
+
+            # Send success response
+            self.send_response(200)
+            self.send_header('Content-type', 'application/json')
+            self.send_header('Access-Control-Allow-Origin', '*')
+            self.end_headers()
+
+            response = {
+                'success': True,
+                'message': 'Onboarding marked as complete'
+            }
+
+            response_json = json.dumps(response)
+            self.wfile.write(response_json.encode('utf-8'))
+
+        except Exception as e:
+            print(f"Error marking onboarding complete: {e}")
 
             # Send error response
             error_response = {

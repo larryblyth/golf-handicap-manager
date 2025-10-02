@@ -13,13 +13,62 @@ function initializeApp() {
         window.location.href = '/';
         return;
     }
-    
+
     // Initialize app-specific features
     setupAppNavigation();
     loadDashboardData();
-    
+
+    // Check if this is a new user onboarding
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('onboarding') === 'true') {
+        handleNewUserOnboarding();
+    }
+
     // Gmail integration is handled by setupGmailIntegrationListeners in loadDashboardData
     console.log('Gmail integration initialized');
+}
+
+function handleNewUserOnboarding() {
+    // Show settings page for new users
+    showPage('settings');
+    loadSettingsData();
+
+    // Update navigation to show settings as active
+    const navLinks = document.querySelectorAll('.sidebar-nav .nav-link');
+    navLinks.forEach(l => l.classList.remove('active'));
+    const settingsLink = document.querySelector('.sidebar-nav .nav-link[href="/app/settings"]');
+    if (settingsLink) {
+        settingsLink.classList.add('active');
+    }
+
+    // Show a welcome notification with instructions
+    setTimeout(() => {
+        showNotification('Welcome! Please connect your Gmail to automatically sync golf rounds.', 'success');
+    }, 500);
+
+    // Mark onboarding as viewed and remove the URL parameter
+    const user = JSON.parse(localStorage.getItem('golfUser'));
+    if (user) {
+        markOnboardingComplete(user.id);
+    }
+
+    // Clean up URL without reload
+    const newUrl = window.location.pathname;
+    window.history.replaceState({}, document.title, newUrl);
+}
+
+async function markOnboardingComplete(userId) {
+    try {
+        await fetch('/api/mark-onboarding-complete', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ user_id: userId })
+        });
+    } catch (error) {
+        console.error('Error marking onboarding complete:', error);
+    }
 }
 
 function setupAppNavigation() {

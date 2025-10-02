@@ -63,10 +63,10 @@ function closeAuthModal() {
 }
 
 // Google Sign-In callback
-function handleCredentialResponse(response) {
+async function handleCredentialResponse(response) {
     // Decode the JWT token (in a real app, you'd verify this on the server)
     const responsePayload = decodeJwtResponse(response.credential);
-    
+
     currentUser = {
         id: responsePayload.sub,
         name: responsePayload.name,
@@ -74,19 +74,28 @@ function handleCredentialResponse(response) {
         picture: responsePayload.picture,
         provider: 'google'
     };
-    
+
     // Save to localStorage
     localStorage.setItem('golfUser', JSON.stringify(currentUser));
-    
-    // Save user to database
-    saveUserToDatabase(currentUser);
-    
+
+    // Save user to database and check if they're a new user
+    const isNewUser = await saveUserToDatabase(currentUser);
+
     // Update UI
     updateUI();
     closeAuthModal();
-    
-    // Show welcome message
-    showNotification(`Welcome back, ${currentUser.name}!`);
+
+    // Redirect new users to settings, otherwise show welcome message
+    if (isNewUser) {
+        showNotification(`Welcome, ${currentUser.name}! Let's set up your account.`);
+        // Redirect to app with onboarding flag
+        setTimeout(() => {
+            window.location.href = '/app?onboarding=true';
+        }, 1000);
+    } else {
+        // Show welcome message for returning users
+        showNotification(`Welcome back, ${currentUser.name}!`);
+    }
 }
 
 // Save user data to database
@@ -99,14 +108,18 @@ async function saveUserToDatabase(userData) {
             },
             body: JSON.stringify(userData)
         });
-        
+
         if (response.ok) {
             console.log('User data saved to database');
+            const data = await response.json();
+            return data.is_new_user;
         } else {
             console.error('Failed to save user data to database');
+            return false;
         }
     } catch (error) {
         console.error('Error saving user data:', error);
+        return false;
     }
 }
 
